@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object('_config')
 
 
-# helper function
+# helper functions
 
 def connect_db():
     return sqlite3.connect(app.config['DATABASE_PATH'])
@@ -42,9 +42,9 @@ def logout():
 def login():
     if request.method == 'POST':
         if request.form['username'] != app.config['USERNAME'] \
-        or request.form['password'] != app.config['PASSWORD']:
-           error = 'Invalid Credentials. Please try again.'
-           return render_template('login.html', error=error)
+               or request.form['password'] != app.config['PASSWORD']:
+            error = 'Invalid Credentials. Please try again.'
+            return render_template('login.html', error=error)
         else:
             session['logged_in'] = True
             flash('Welcome!')
@@ -56,12 +56,27 @@ def login():
 @login_required
 def tasks():
     g.db = connect_db()
-    cur = g.db.execute('select name, due_date, priority, task_id from tasks where status=1')
-    open_tasks = [dict(name=row[0], due_date=row[1], priority=row[2], task_1d=row[3]) for row in cur.fetchall()]
-    cur = g.db.execute('select name, due_date, priority, task_id from tasks where status=0')
-    closed_tasks = [dict(name=row[0], due_date=row[1], priority=row[2], task_1d=row[3]) for row in cur.fetchall()]
+    cur = g.db.execute(
+        'select name, due_date, priority, task_id from tasks where status=1'
+    )
+    open_tasks = [
+        dict(name=row[0], due_date=row[1], priority=row[2],
+             task_id=row[3]) for row in cur.fetchall()
+        ]
+    cur = g.db.execute(
+        'select name, due_date, priority, task_id from tasks where status=0'
+    )
+    closed_tasks = [
+        dict(name=row[0], due_date=row[1], priority=row[2],
+             task_id=row[3]) for row in cur.fetchall()
+        ]
     g.db.close()
-    return render_template('tasks.html', form=AddTaskForm(request.form), open_tasks=open_tasks, closed_tasks=closed_tasks)
+    return render_template(
+        'tasks.html',
+        form=AddTaskForm(request.form),
+        open_tasks=open_tasks,
+        closed_tasks=closed_tasks
+    )
 
 
 # Add new tasks
@@ -77,7 +92,12 @@ def new_task():
         return redirect(url_for('tasks'))
     else:
         g.db.execute('insert into tasks (name, due_date, priority, status) \
-            values (?, ?, ?, 1)', [request.form['name'], request.form['due_date'], request.form['priority']])
+            values (?, ?, ?, 1)', [
+                request.form['name'],
+                request.form['due_date'],
+                request.form['priority']
+            ]
+        )
         g.db.commit()
         g.db.close()
         flash('New entry was successfully posted. Thanks.')
@@ -89,7 +109,9 @@ def new_task():
 @login_required
 def complete(task_id):
     g.db = connect_db()
-    g.db.execute('update tasks set status = 0 where task id='+str(task_id))
+    g.db.execute(
+        'update tasks set status = 0 where task_id='+str(task_id)
+    )
     g.db.commit()
     g.db.close()
     flash('The task was marked as complete.')
