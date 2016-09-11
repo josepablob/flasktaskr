@@ -4,7 +4,7 @@
 <h1>Welcome to Flasktaskr.</h1>
 <h3>Please register to access the task list.</h3>
     <form method="POST" action="">
-      {{ form.crsf_token }}
+      {{ form.csrf_token }}
       <p>
         {{ form.name.label }}: {{ form.name }}
         &nbsp;&nbsp;

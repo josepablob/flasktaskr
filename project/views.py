@@ -118,19 +118,27 @@ def delete_entry(task_id):
     return redirect(url_for('tasks'))
 
 
+# Register
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     error = None
     form = RegisterForm(request.form)
     if request.method == 'POST':
+        print form.validate_on_submit()
         if form.validate_on_submit():
+            print "adding new user"
             new_user = User(
                 form.name.data,
                 form.email.data,
-                form.password.data,
+                form.password.data
             )
             db.session.add(new_user)
             db.session.commit()
             flash('Thanks for registering. Please login.')
             return redirect(url_for('login'))
+        else:
+            flash('validation failed')
+            flash(form.errors)
+            print (form.password.data,
+                   form.confirm.data)
     return render_template('register.html', form=form, error=error)
